@@ -216,15 +216,20 @@ async def send_message(request: SendMessageRequest, user_info = Depends(get_curr
         token, username = user_info
         client = await get_client(token)
         
-        # 创建助手和线程（使用Web用户名作为用户标识）
+        # 获取助手和线程（使用Web用户名作为用户标识）
         web_user_id = username  # 从JWT中获取用户名
+        # assistant确定跑哪个图，传入什么配置(这儿传入后，在节点可以通过RunnableConfig获取到)
+        # assistant 按 user_id+external_id 生成稳定ID，重复调用幂等复用
         assistant_id = await client.create_assistant(
             graph_id=SAGT_GRAPH_ID,
             external_id=EXTERNAL_ID,
             user_id=web_user_id
         )
-        
-        thread_id = await client.create_thread(
+
+        # thread确定在哪个对话里跑，支持多轮对话
+        # 同一用户始终复用同一条 thread（按 user_id+external_id 生成稳定ID），
+        # 保证多轮上下文连续，并与 get_interrupt/confirm_interrupt 共用同一会话
+        thread_id = await client.get_thread_id(
             user_id=web_user_id,
             external_id=EXTERNAL_ID
         )
