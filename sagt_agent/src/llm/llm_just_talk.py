@@ -1,20 +1,26 @@
 from src.llm.llm_setting import chat_model as llm
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, SystemMessage, AnyMessage
 from src.utils.agent_logger import get_logger
 from src.models.sagt_models import JustTalkOutput
 
 logger = get_logger("llm_just_talk")
 
-def llm_just_talk(input: str) -> JustTalkOutput:
+def llm_just_talk(messages: list[AnyMessage]) -> JustTalkOutput:
+
+    chat_history = '\n\n'.join(message.content for message in messages if messages)
+
+    # 系统指令（含 JustTalkOutput 的 JSON schema 与示例）作为首条消息，
+    # 其后追加历史对话（已包含本轮用户输入），实现多轮上下文感知
     prompt = _just_talk_instructions.format(
-        input=input,
         schema_json=JustTalkOutput.get_schema_json(),
         example_json=JustTalkOutput.get_example_json(),
+        input=chat_history
     )
-    logger.debug(f"prompt: {prompt}")
+
+    logger.info(f"prompt: {prompt}")
 
     generated_result: AIMessage = llm.invoke(prompt)
-    logger.debug(f"generated_result: {generated_result}")
+    logger.info(f"generated_result: {generated_result}")
 
     if generated_result and generated_result.content:
         just_talk_json = generated_result.content
@@ -37,7 +43,7 @@ def llm_just_talk(input: str) -> JustTalkOutput:
 _just_talk_instructions = """
 你是一个出色的助手，可以帮助公司员工解决/回答各种问题。如果是其他讨论/闲聊的内容，你也可以提供有意思的回答或者建议。
 
-下面是你需要回答的问题，你需要回答这个问题，并按照 JustTalkOutput 数据结构定义返回JSON。
+你需要结合对话上下文回答用户最新提出的问题，并按照 JustTalkOutput 数据结构定义返回JSON。
 
 【注意】请不要在JSON对象前后包含任何文本。也不要包含“```json”或者“```”这样的文本。
 【注意】请不要在json对象中包含任何未定义的字段。
@@ -52,7 +58,7 @@ json对象示例：
 {example_json}
 -------------------
 
-员工输入的问题：
+下面是与员工的对话历史（最后一条为用户当前的问题）：
 -------------------
 {input}
 -------------------

@@ -1,6 +1,7 @@
 import operator
 from typing_extensions import Annotated, List, TypedDict
 from enum import Enum
+from langchain_core.messages import AnyMessage
 from src.models.sagt_models import ScheduleSuggestion, TagSetting, EmployeeInfo, ChatHistory, KFChatHistory, OrderHistory, TaskResult, NodeResult
 from src.models.sagt_models import CustomerInfo, TagSuggestion, ReplySuggestion, CustomerProfile, CustomerTags
 
@@ -50,7 +51,8 @@ class SagtState(InputState,IntermediateInputState,IntermediateOutputState,Output
     '''
     主图的State，继承InputState,IntermediateInputState,IntermediateOutputState,OutputState
     '''
-    pass
+    # 多轮对话历史，使用 add_messages reducer 自动合并，由 checkpointer 持久化
+    messages: Annotated[List[AnyMessage], operator.add]
 
 class SagtStateField(str, Enum):
     '''
