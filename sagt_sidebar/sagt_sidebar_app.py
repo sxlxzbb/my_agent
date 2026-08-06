@@ -227,9 +227,9 @@ async def send_message(request: SendMessageRequest, user_info = Depends(get_curr
         )
 
         # thread确定在哪个对话里跑，支持多轮对话
-        # 同一用户始终复用同一条 thread（按 user_id+external_id 生成稳定ID），
-        # 保证多轮上下文连续，并与 get_interrupt/confirm_interrupt 共用同一会话
-        thread_id = await client.get_thread_id(
+        # 同一用户始终复用同一条 thread（按 user_id+external_id 生成稳定ID）
+        # 这里必须使用create_thread,如果只是生成thread_id的话会报线程不存在的错（线程不会自动创建）
+        thread_id = await client.create_thread(
             user_id=web_user_id,
             external_id=EXTERNAL_ID
         )

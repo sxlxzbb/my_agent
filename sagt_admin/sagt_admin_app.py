@@ -3,20 +3,20 @@
 """
 销售智能体管理后台 Flask 应用
 """
-
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import json
 import os
 from dotenv import load_dotenv
 from functools import wraps
 from sagt_store_api.sagt_store_api import create_sagt_store_api, SagtStoreAPI
+from utils.logger import get_logger
 
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')  # 在生产环境中应该使用更安全的密钥
 
-
+logger = get_logger("sagt_admin_app")
 # 创建数据客户端
 client: SagtStoreAPI = create_sagt_store_api(url = os.getenv('SAGT_SERVER_URL'), user_id = os.getenv('SAGT_USER_ID'), password = os.getenv('SAGT_PASSWORD'))
 
@@ -189,6 +189,7 @@ def api_customer_detail(follow_user_id, external_id):
 def api_chat_records(user_id, external_id):
     """获取对话记录API"""
     try:
+        logger.info(f"查询对话记录,user_id:{user_id}, external_id:{external_id}")
         # 获取查询参数，如果没有提供则使用30天前作为默认值
         after_yyyy_mm_dd = request.args.get('after_yyyy_mm_dd')
         if not after_yyyy_mm_dd:

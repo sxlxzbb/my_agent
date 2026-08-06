@@ -6,7 +6,11 @@ import os
 from dotenv import load_dotenv
 import requests
 
+from utils.logger import get_logger
+
 load_dotenv()
+
+logger = get_logger("sagt_store_api")
 
 class SagtStoreAPI:
     """
@@ -188,6 +192,7 @@ class SagtStoreAPI:
         from_to_sorted_key = "".join(sorted([external_id, user_id]))
         namespace = ["wxqy_msg", from_to_sorted_key]
         filter = {"YYYYMMDD": {"$gte": after_yyyy_mm_dd}}
+        logger.info(f'list_last_wxqy_msg,namespace:{namespace}, filter:{filter}')
         response = self.store.search_items(namespace, filter=filter, limit=limit)
         results = [item["value"] for item in response["items"]]
         return results
