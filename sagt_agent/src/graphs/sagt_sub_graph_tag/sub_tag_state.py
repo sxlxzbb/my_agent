@@ -1,24 +1,38 @@
 import operator
-from typing import TypedDict, Annotated, List
-from src.graphs.sagt_state import SagtStateField
-from src.models.sagt_models import CustomerProfile, TagSuggestion, TagSetting, CustomerTags
-from src.models.sagt_models import TaskResult, NodeResult
-from src.graphs.sagt_data_state import SagtDataState
 from enum import Enum
+from typing import TypedDict, Annotated, List
+
+from src.graphs.sagt_state import SagtStateField
+from src.models.sagt_models import CustomerProfile, TagSuggestion, TagSetting, CustomerTags, ChatHistory, KFChatHistory, \
+    OrderHistory
+from src.models.sagt_models import TaskResult, NodeResult
+
 
 class SubTagStateField(str, Enum):
     """子图状态字段名称枚举"""
-    # 输入字段（来自 SagtDataState 基类，无需重复声明）
+    # 输入字段（字段值引用主图 SagtStateField，确保与主图/基类同名字段一致）
+    TAG_SETTING = SagtStateField.TAG_SETTING.value
+    CHAT_HISTORY = SagtStateField.CHAT_HISTORY.value
+    KF_CHAT_HISTORY = SagtStateField.KF_CHAT_HISTORY.value
+    ORDER_HISTORY = SagtStateField.ORDER_HISTORY.value
+    CUSTOMER_TAGS = SagtStateField.CUSTOMER_TAGS.value
+    CUSTOMER_PROFILE = SagtStateField.CUSTOMER_PROFILE.value
+
     # 中间输出字段
     NOTIFY_CONTENT = SagtStateField.NOTIFY_CONTENT.value
     SUGGESTION_TAG = SagtStateField.SUGGESTION_TAG.value
+
     # 输出字段
     TASK_RESULT = SagtStateField.TASK_RESULT.value
     NODE_RESULT = SagtStateField.NODE_RESULT.value
 
-class SubTagInputState(SagtDataState):
-    """子图的输入状态（继承 SagtDataState，按需拥有全部业务数据字段）"""
-    pass
+class SubTagInputState(TypedDict):
+    tag_setting:        TagSetting
+    chat_history:       ChatHistory
+    kf_chat_history:    KFChatHistory
+    order_history:      OrderHistory
+    customer_tags:      CustomerTags
+    customer_profile:   CustomerProfile
 
 class SubTagIntermediateState(TypedDict):
     notify_content:     str

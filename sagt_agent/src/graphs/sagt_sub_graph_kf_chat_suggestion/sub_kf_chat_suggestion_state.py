@@ -2,14 +2,15 @@ import operator
 from typing import TypedDict, Annotated, List
 from src.graphs.sagt_state import SagtStateField
 from src.models.sagt_models import KFChatHistory, CustomerInfo, ReplySuggestion, TaskResult, NodeResult
-from src.graphs.sagt_data_state import SagtDataState
 from enum import Enum
 
 
 class SubKFChatSuggestionStateField(str, Enum):
     """子图状态字段名称枚举"""
     
-    ## 输入字段（来自 SagtDataState 基类，无需重复声明）
+    ## 输入字段（字段值引用主图 SagtStateField，确保与主图/基类同名字段一致）
+    CUSTOMER_INFO = SagtStateField.CUSTOMER_INFO.value
+    KF_CHAT_HISTORY = SagtStateField.KF_CHAT_HISTORY.value
 
     ## 中间输出字段
     SUGGESTION_KF = SagtStateField.SUGGESTION_KF.value
@@ -18,9 +19,10 @@ class SubKFChatSuggestionStateField(str, Enum):
     TASK_RESULT = SagtStateField.TASK_RESULT.value
     NODE_RESULT = SagtStateField.NODE_RESULT.value
 
-class SubKFChatSuggestionInputState(SagtDataState):
-    """子图的输入状态（继承 SagtDataState，按需拥有全部业务数据字段）"""
-    pass
+class SubKFChatSuggestionInputState(TypedDict):
+    """子图的输入状态"""
+    customer_info:      CustomerInfo
+    kf_chat_history:    KFChatHistory
 
 class SubKFChatSuggestionIntermediateOutputState(TypedDict):
     """子图的中间输出状态"""
