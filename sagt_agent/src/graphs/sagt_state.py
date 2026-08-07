@@ -62,6 +62,9 @@ class SagtStateField(str, Enum):
     ## 任务输入
     TASK_INPUT          ="task_input"
 
+    ## 当前意图（意图检测后写入，用于加载数据后分流到对应子图）
+    CURRENT_INTENT      ="current_intent"
+
     ## 信息Load
     EMPLOYEE_INFO       ="employee_info"
     CHAT_HISTORY        ="chat_history"

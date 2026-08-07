@@ -94,7 +94,7 @@ def intent_detection(state: SagtState, config: RunnableConfig) -> Command[Litera
 
     # 任务值直接表明意图，则直接跳转到对应的意图节点
     if task_input in intent_ids:
-        return Command(goto=task_input)
+        return _route_by_intent(task_input)
 
     ## 意图检测
     intent_d = llm_intent_detect(task_input, intents)
@@ -104,7 +104,18 @@ def intent_detection(state: SagtState, config: RunnableConfig) -> Command[Litera
     else:
         intent_id = intent_d.intent_id
 
-    return Command(goto = intent_id)
+    return _route_by_intent(intent_id)
+
+
+def _route_by_intent(intent_id: str) -> Command:
+    """
+    根据意图路由：
+    - 闲聊（未明确意图）：直接进 talk 子图，不加载业务数据（优化1）
+    - 业务意图：先进 data_load_entry 加载数据，再由其分流到对应子图
+    """
+    if intent_id == IntentDetection.NO_CLEAR_INTENTION.value:
+        return Command(goto=IntentDetection.NO_CLEAR_INTENTION.value, update={SagtStateField.CURRENT_INTENT: intent_id})
+    return Command(goto="data_load_entry", update={SagtStateField.CURRENT_INTENT: intent_id})
     
 
 # 任务结果确认

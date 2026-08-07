@@ -12,3 +12,9 @@
 2. 把你的自定义 FastAPI 路由合并进它自己的 HTTP 应用
 3. 把你的 auth 钩子挂到所有请求的前置校验上
 4. 自动注入基础设施：收到 /runs 请求时，帮你把 checkpointer（对话状态持久化）、store、config 都准备好再执行你的 graph
+
+### 打包命令
+docker build -f sagt.dockerfile -t sagt:v2.2.2 .
+
+### 查看日志
+docker compose logs -f langgraph-api

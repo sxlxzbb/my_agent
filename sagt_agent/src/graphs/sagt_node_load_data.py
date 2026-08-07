@@ -1,4 +1,5 @@
 from langchain_core.runnables import RunnableConfig
+from langgraph.types import Command
 from src.graphs.sagt_state import SagtState, SagtStateField
 from src.tools.store_tool import get_tag_setting, get_customer_info, get_chat_history, get_kf_history, get_order_history, get_customer_profile, get_customer_tags, get_employee_info
 from src.graphs.sagt_state import ConfigurableField
@@ -16,6 +17,7 @@ class NodeName(str, Enum):
     LOAD_CHAT_HISTORY       = "load_chat_history_node"
     LOAD_KF_CHAT_HISTORY    = "load_kf_chat_history_node"
     LOAD_ORDER_HISTORY      = "load_order_history_node"
+    DATA_LOAD_ENTRY         = "data_load_entry"
 
 def load_welcome_message_node(state: SagtState, config: RunnableConfig):
     """欢迎信息节点"""
@@ -274,3 +276,36 @@ def load_order_history_node(state: SagtState, config: RunnableConfig):
                 execute_exceptions=[str(e)]
             )]
         }
+
+
+def data_load_entry(state: SagtState, config: RunnableConfig) -> Command:
+    """
+    数据加载入口节点（优化1：仅业务分支在意图检测后加载数据）。
+    顺序执行整条 load 链（保留内部依赖），完成后根据 current_intent 分流到对应业务子图。
+    """
+    logger.info("=== 数据加载入口（意图检测后） ===")
+
+    # 顺序执行 load 链，保留内部依赖关系（order_history 依赖 customer_info 的 union_id）
+    # 收集各节点返回值并合并写回 state（node_result 由 reducer 自动合并）
+    merged: dict = {}
+    for load_fn in (
+        load_welcome_message_node,
+        load_employee_info_node,
+        load_tag_setting_node,
+        load_customer_info_node,
+        load_chat_history_node,
+        load_kf_chat_history_node,
+        load_order_history_node,
+    ):
+        result = load_fn(state, config)
+        if result:
+            for k, v in result.items():
+                if k == SagtStateField.NODE_RESULT:
+                    merged.setdefault(k, []).extend(v)
+                else:
+                    merged[k] = v
+
+    intent_id = state.get(SagtStateField.CURRENT_INTENT, "")
+    logger.info(f"数据加载完成，准备分流到子图：{intent_id}")
+
+    return Command(goto=intent_id, update=merged)
