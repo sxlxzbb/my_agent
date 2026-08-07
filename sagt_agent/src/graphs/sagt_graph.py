@@ -8,8 +8,6 @@ from src.graphs.sagt_sub_graph_tag.sub_tag_graph import sub_tag_graph
 from src.graphs.sagt_sub_graph_schedule.sub_schedule_graph import sub_schedule_graph
 from src.graphs.sagt_sub_graph_talk.sub_talk_graph import sub_talk_graph
 from src.graphs.sagt_node import NodeName, intent_detection, task_result_confirm, welcome_message, cleanup_state_node
-from src.graphs.sagt_node_load_data import NodeName as LoadDataNodeName
-from src.graphs.sagt_node_load_data import load_welcome_message_node, load_employee_info_node, load_tag_setting_node, load_customer_info_node, load_chat_history_node, load_kf_chat_history_node, load_order_history_node
 
 import os
 from dotenv import load_dotenv

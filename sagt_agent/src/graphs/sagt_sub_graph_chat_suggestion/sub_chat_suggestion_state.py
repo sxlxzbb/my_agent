@@ -1,19 +1,14 @@
 import operator
 from typing import TypedDict, Annotated, List
 from src.graphs.sagt_state import SagtStateField
-from src.models.sagt_models import ChatHistory, OrderHistory, CustomerInfo, CustomerProfile, ReplySuggestion, CustomerTags, TaskResult, EmployeeInfo, NodeResult
+from src.models.sagt_models import CustomerInfo, CustomerProfile, ReplySuggestion, CustomerTags, TaskResult, EmployeeInfo, NodeResult
+from src.graphs.sagt_data_state import SagtDataState
 from enum import Enum
 
 class SubChatSuggestionStateField(str, Enum):
     """子图状态字段名称枚举"""
     
-    ## 输入字段
-    EMPLOYEE_INFO    = SagtStateField.EMPLOYEE_INFO.value
-    CHAT_HISTORY     = SagtStateField.CHAT_HISTORY.value
-    ORDER_HISTORY    = SagtStateField.ORDER_HISTORY.value
-    CUSTOMER_INFO    = SagtStateField.CUSTOMER_INFO.value
-    CUSTOMER_TAGS    = SagtStateField.CUSTOMER_TAGS.value
-    CUSTOMER_PROFILE = SagtStateField.CUSTOMER_PROFILE.value
+    ## 输入字段（来自 SagtDataState 基类，无需重复声明）
 
     ## 中间输出字段
     SUGGESTION_CHAT     = SagtStateField.SUGGESTION_CHAT.value
@@ -22,14 +17,9 @@ class SubChatSuggestionStateField(str, Enum):
     TASK_RESULT         = SagtStateField.TASK_RESULT.value
     NODE_RESULT         = SagtStateField.NODE_RESULT.value
 
-class SubChatSuggestionInputState(TypedDict):
-    """子图的输入状态"""
-    employee_info:      EmployeeInfo
-    chat_history:       ChatHistory
-    order_history:      OrderHistory
-    customer_info:      CustomerInfo
-    customer_tags:      CustomerTags
-    customer_profile:   CustomerProfile
+class SubChatSuggestionInputState(SagtDataState):
+    """子图的输入状态（继承 SagtDataState，按需拥有全部业务数据字段）"""
+    pass
 
 class SubChatSuggestionIntermediateOutputState(TypedDict):
     """子图的中间输出状态"""

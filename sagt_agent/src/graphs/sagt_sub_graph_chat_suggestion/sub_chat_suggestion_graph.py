@@ -5,8 +5,7 @@ from src.graphs.sagt_sub_graph_chat_suggestion.sub_chat_suggestion_state import 
 from src.graphs.sagt_sub_graph_chat_suggestion.sub_chat_suggestion_node import generate_chat_suggestion_node
 from src.graphs.sagt_sub_graph_chat_suggestion.sub_chat_suggestion_node import welcome_message_node
 from src.graphs.sagt_sub_graph_chat_suggestion.sub_chat_suggestion_node import NodeName
-from src.graphs.sagt_node_load_data import NodeName as LoadDataNodeName, load_employee_info_node, \
-    load_customer_info_node, load_chat_history_node
+from src.graphs.sagt_data_state import build_data_load_nodes, DataField
 from src.graphs.sagt_state import SagtConfig
 
 builder = StateGraph(
@@ -17,16 +16,16 @@ builder = StateGraph(
 )
 
 builder.add_node(NodeName.WELCOME_MESSAGE.value, welcome_message_node)
-builder.add_node(LoadDataNodeName.LOAD_EMPLOYEE_INFO.value, load_employee_info_node) ## 加载员工信息
-builder.add_node(LoadDataNodeName.LOAD_CUSTOMER_INFO.value, load_customer_info_node) ## 加载客户信息
-builder.add_node(LoadDataNodeName.LOAD_CHAT_HISTORY.value, load_chat_history_node)   ## 加载聊天消息
 builder.add_node(NodeName.GENERATE_CHAT_SUGGESTION.value, generate_chat_suggestion_node)
 
 builder.add_edge(START, NodeName.WELCOME_MESSAGE.value)
-builder.add_edge(NodeName.WELCOME_MESSAGE.value, LoadDataNodeName.LOAD_EMPLOYEE_INFO.value)
-builder.add_edge(LoadDataNodeName.LOAD_EMPLOYEE_INFO.value, LoadDataNodeName.LOAD_CUSTOMER_INFO.value)
-builder.add_edge(LoadDataNodeName.LOAD_CUSTOMER_INFO.value, LoadDataNodeName.LOAD_CHAT_HISTORY.value)
-builder.add_edge(LoadDataNodeName.LOAD_CHAT_HISTORY.value, NodeName.GENERATE_CHAT_SUGGESTION.value)
+# 按 chat_suggestion 子图需要加载的数据字段，自动装配 load 节点链：welcome -> employee -> customer_info -> chat -> generate
+build_data_load_nodes(
+    builder,
+    needed_fields=[DataField.EMPLOYEE_INFO, DataField.CUSTOMER_INFO, DataField.CHAT_HISTORY],
+    entry=NodeName.WELCOME_MESSAGE.value,
+    tail=NodeName.GENERATE_CHAT_SUGGESTION.value,
+)
 builder.add_edge(NodeName.GENERATE_CHAT_SUGGESTION.value, END)
 
 sub_chat_suggestion_graph = builder.compile()
