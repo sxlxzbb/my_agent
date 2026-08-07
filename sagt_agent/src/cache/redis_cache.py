@@ -67,7 +67,9 @@ def get_json(key: str) -> Optional[dict]:
         raw = client.get(key)
         if raw is None:
             return None
-        return json.loads(raw)
+        cache_data = json.loads(raw)
+        logger.info(f"查询缓存成功,key:{key}, cache_data:{cache_data}")
+        return cache_data
     except Exception as e:
         logger.warning(f"读取缓存失败 key={key}: {e}")
         return None
@@ -80,6 +82,7 @@ def set_json(key: str, value: dict, ttl: int) -> None:
         return
     try:
         client.setex(key, ttl, json.dumps(value, ensure_ascii=False))
+        logger.info(f"写入缓存成功:key:{key},ttl:{ttl}")
     except Exception as e:
         logger.warning(f"写入缓存失败 key={key}: {e}")
 
@@ -91,5 +94,6 @@ def delete_key(key: str) -> None:
         return
     try:
         client.delete(key)
+        logger.info(f"删除缓存成功,key:{key}")
     except Exception as e:
         logger.warning(f"删除缓存失败 key={key}: {e}")
