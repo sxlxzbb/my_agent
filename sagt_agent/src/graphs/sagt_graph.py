@@ -15,6 +15,9 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+# 父图加载数据是怎么传到子图的？
+# 父图调用子图时，从父图 state 里取出所有"在子图 input_schema 中同名字段"的值传进去（注意，字段名必须一致，另外父图传数据给子图是浅拷贝，子图尽量不要改父图传过来的dict里对象的值）
+# 子图执行完，返回数据给父图的时候也是同样的道理
 builder = StateGraph(state_schema=SagtState, input_schema=InputState, output_schema=OutputState, config_schema=SagtConfig)
 
 builder.add_node(NodeName.CLEANUP_STATE.value, cleanup_state_node) ## 清理状态
