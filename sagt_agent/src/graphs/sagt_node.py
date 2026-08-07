@@ -58,6 +58,8 @@ def cleanup_state_node(state: SagtState, config: RunnableConfig):
         SagtStateField.SUGGESTION_KF: None,
         SagtStateField.SUGGESTION_SCHEDULE: None,
         SagtStateField.NOTIFY_CONTENT: None,
+        ## 当前意图（每轮由 intent_detection 重写）
+        SagtStateField.CURRENT_INTENT: None,
     }
 
 def welcome_message(state: SagtState, config: RunnableConfig):

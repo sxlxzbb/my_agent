@@ -283,7 +283,8 @@ def data_load_entry(state: SagtState, config: RunnableConfig) -> Command:
     数据加载入口节点（优化1：仅业务分支在意图检测后加载数据）。
     顺序执行整条 load 链（保留内部依赖），完成后根据 current_intent 分流到对应业务子图。
     """
-    logger.info("=== 数据加载入口（意图检测后） ===")
+    intent_id = state.get(SagtStateField.CURRENT_INTENT, "")
+    logger.info(f"=== 数据加载入口（意图检测后）,当前意图ID:{intent_id} ===")
 
     # 顺序执行 load 链，保留内部依赖关系（order_history 依赖 customer_info 的 union_id）
     # 收集各节点返回值并合并写回 state（node_result 由 reducer 自动合并）
@@ -305,7 +306,6 @@ def data_load_entry(state: SagtState, config: RunnableConfig) -> Command:
                 else:
                     merged[k] = v
 
-    intent_id = state.get(SagtStateField.CURRENT_INTENT, "")
     logger.info(f"数据加载完成，准备分流到子图：{intent_id}")
 
     return Command(goto=intent_id, update=merged)

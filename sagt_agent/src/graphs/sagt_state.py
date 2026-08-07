@@ -46,6 +46,8 @@ class IntermediateOutputState(TypedDict):
     suggestion_kf:      ReplySuggestion
     suggestion_schedule:ScheduleSuggestion
     notify_content:     str
+    # 当前意图（意图检测后写入，用于加载数据后分流到对应子图）
+    current_intent: str
 
 class SagtState(InputState,IntermediateInputState,IntermediateOutputState,OutputState):
     '''
